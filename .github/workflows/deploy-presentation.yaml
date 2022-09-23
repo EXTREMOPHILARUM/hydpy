@@ -15,3 +15,4 @@ jobs:
       with:
         pages-branch: main
         markdown-path: ./presentation.md
+        static-html-path: ./static/index.html
