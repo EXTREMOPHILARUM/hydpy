@@ -1,0 +1,17 @@
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_presentation:
+    runs-on: ubuntu-latest
+    name: Generate a Remark Presentation
+    steps:
+    - id: generate-presentation
+      uses: rreichel3/remarkable-action
+      with:
+        pages-branch: main
+        markdown-path: ./presentation.md
