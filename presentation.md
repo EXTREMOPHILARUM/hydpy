@@ -23,7 +23,7 @@ class: center, middle
 
 ---
 class: center, middle
-### Building a Trojan
+# Building a Trojan
 
 ---
 ### Step 1: Lets print all keystrokes to the console
