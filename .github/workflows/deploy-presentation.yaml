@@ -11,7 +11,7 @@ jobs:
     name: Generate a Remark Presentation
     steps:
     - id: generate-presentation
-      uses: rreichel3/remarkable-action@latest
+      uses: rreichel3/remarkable-action@v1.1
       with:
         pages-branch: main
         markdown-path: ./presentation.md
