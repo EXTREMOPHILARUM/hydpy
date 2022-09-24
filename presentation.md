@@ -31,6 +31,14 @@ class: center, middle
 # Building a Trojan
 
 ---
+class: center, middle
+
+# Prerequisites
+```bash
+pip install pynput
+```
+
+---
 ### Step 1: Lets print all keystrokes to the console
 
 
