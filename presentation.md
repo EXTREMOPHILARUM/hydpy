@@ -42,7 +42,7 @@ count: false
 
 # Some more basics
 
-<img src="http://www.tcpipguide.com/free/diagrams/arpoperation.png">
+<img src="static/arp_flow.png">
 
 ???
 
