@@ -2,7 +2,6 @@ class: center, middle
 
 # Sniffing your way through the network
 
-.bottom
 ---
 class: center, middle
 
@@ -19,6 +18,11 @@ Like to do cool stuff with tech
 1. What?
 2. Why?
 3. How?
+---
+class: middle,center
+
+# ARP
+# Address resolution protocol
 
 ---
 class: middle,center
