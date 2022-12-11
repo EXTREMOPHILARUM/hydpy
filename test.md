@@ -1,24 +1,10 @@
-class: center, middle
+The talk is about how to perform network operations using python. We will be using scapy to perform the same. This will be done by using ARP packets.
 
-# Sniffing your way through the network
+## Prerequisites
+- Basic idea of networking and python
+- TCP/IP
 
----
-
-# Today we will try to answer a few basic questions about network sniffing
-
-1. What?
-2. Why?
-3. How?
-4. When?
-5. Where?
-
----
-# Bit of basics
-
-<img src="static/how_arp_works.webp" width="100%">
-
-???
-
+## ARP packets
 - ARP packets are used to map IP addresses to MAC addresses
 - There are two types of ARP packets
     - ARP request
@@ -26,77 +12,13 @@ class: center, middle
 - ARP request is used to find the MAC address of a host on the network
 - ARP reply is used to reply to the ARP request
 
----
-count: false
-
-# Bit of basics
-
-<img src="http://www.tcpipguide.com/free/diagrams/arpoperation.png">
-
-???
-
-# ARP cache
+## ARP cache
 - ARP cache is a table that stores the mapping of IP addresses to MAC addresses
 
----
-count: false
-
-# Bit of basics
-### Code for arp request and reply
-
-```python
-#! /usr/bin/env python3
-from scapy.all import ARP, sniff
-
-def arp_display(pkt):
-    if pkt[ARP].op == 1: #who-has (request)
-        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
-    if pkt[ARP].op == 2: #is-at (response)
-        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
-
-sniff(prn=arp_display, filter="arp", store=0, count=10)
-```
-
----
-count: false
-
-# Bit of basics
-### Output
-
-<img src="static/arp_req_res.gif">
-
----
-# What?
-
-<img src="https://www.greycampus.com/hubfs/Imported_Blog_Media/What%20is%20a%20Sniffing%20attack%20and%20How%20can%20you%20defend%20it.jpg" width="100%">
-
----
-# How?
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/ARP_Spoofing.svg/1200px-ARP_Spoofing.svg.png" width="90%">
-
-???
-
-# ARP cache poisoning
+## ARP cache poisoning
 ARP poisoning is a technique used to intercept traffic between two hosts on the network. This is done by sending fake ARP replies to the hosts. The hosts will then start sending traffic to the attacker instead of the intended host.
 
----
-class: center, middle
-
-# Prerequisites
-```bash
-pip3 install scapy
-```
----
-# Step 1: Lets Sniff the default interface
-
-```python
-# sniff with default interface
-from scapy.all import *
-sniff(filter="port 80", prn=process_packet, store=False)
-```
-
----
-# How to perform ARP cache poisoning
+## How to perform ARP cache poisoning
 - We will be using scapy to perform the same
 - Scapy is a python library that allows us to send and receive packets
 - We will be using the following code to perform the same
@@ -119,8 +41,7 @@ sniff(filter="port 80", prn=process_packet, store=False)
 - Like, we can print the traffic to the console
 - or can extract the data from the traffic like cookies, passwords, etc
 
----
-# How to prevent ARP cache poisoning
+## How to prevent ARP cache poisoning
 - We can prevent ARP cache poisoning by monitoring the ARP cache and ARP traffic on the network.
 - We can use the following code to monitor the ARP cache
 ```python
@@ -142,20 +63,17 @@ send(ARP(op=2, pdst="victim_ip", hwdst="victim_mac", psrc="gateway_ip"))
 # send an ARP reply to the gateway
 send(ARP(op=2, pdst="gateway_ip", hwdst="gateway_mac", psrc="victim_ip"))
 ```
----
 
-# Conclusion
+## Conclusion
 - We have seen how to perform ARP cache poisoning
 - We have also seen how to prevent ARP cache poisoning
 - We now know how to sniff traffic on the network
 - We can now perform operations on the traffic
 
----
-class: center, middle
 
-# Any questions?
----
-class: center, middle
-
-# You can find me @EXTREMOPHILARUM
-# hydpy.saurabhn.com
+## Environment
+For the demo we will be using an environment simulated in ns3. We will be using the following:
+- 2 hosts
+- 1 router
+- 1 attacker
+[Presentation link](https://hydpy.saurabhn.com/#1)
