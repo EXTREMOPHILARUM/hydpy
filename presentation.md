@@ -116,8 +116,7 @@ sniff(prn=arp_display, filter="arp", store=0, count=10)
 
 ---
 
-# Bit of basics
-### Output
+# Output
 
 <img src="static/arp_req_res.gif">
 
@@ -208,5 +207,6 @@ class: center, middle
 ---
 class: center, middle
 
+# Thank you for having me here
 # You can find me @EXTREMOPHILARUM
 # You can find the slides at hydpy.saurabhn.com
